@@ -1,0 +1,8 @@
+{
+  "name": "tihaya-gavan-menu",
+  "private": true,
+  "description": "Онлайн-меню «Тихая гавань» — статический сайт",
+  "scripts": {
+    "start": "npx --yes serve . -l 3000"
+  }
+}

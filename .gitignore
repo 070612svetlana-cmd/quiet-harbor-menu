@@ -1,0 +1,17 @@
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor
+*.swp
+*.swo
+.vscode/*
+!.vscode/extensions.json
+
+# Logs / temp
+*.log
+*.tmp
+
+# Optional local tooling
+node_modules/
