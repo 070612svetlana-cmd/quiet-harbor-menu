@@ -5,9 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Тихая гавань — онлайн-меню ресторана: завтраки, закуски, салаты, горячее, десерты. Поиск по блюдам и избранное." />
   <title>Тихая гавань — Онлайн-меню</title>
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem("tihaya-harbor-theme") === "dark") {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      } catch (e) {}
+    })();
+  </script>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body id="top">
+
+  <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false" aria-label="Включить тёмную тему" title="Светлая / тёмная тема">🌙</button>
 
   <header class="landing" id="welcome">
     <div class="container">
