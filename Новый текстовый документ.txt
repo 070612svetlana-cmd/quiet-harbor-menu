@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Тихая гавань — Онлайн-меню</title>
+  <style>
+    :root{
+      --bg1:#0f2d34;
+      --bg2:#1f5a60;
+      --bg3:#89a8a0;
+      --paper:#f6eddc;
+      --paper-soft:#fbf5ea;
+      --gold:#d8b46a;
+      --gold-dark:#a57727;
+      --text:#2f2a24;
+      --muted:#6e6558;
+      --sea:#29484b;
+      --line:rgba(112,88,45,.15);
+      --shadow:0 14px 34px rgba(15,29,31,.18);
+      --radius-xl:30px;
+      --radius-lg:22px;
+      --radius-md:16px;
+      --max:1280px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Georgia,"Times New Roman",serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 15% 15%, rgba(255,225,150,.10), transparent 18%),
+        radial-gradient(circle at 85% 10%, rgba(255,225,150,.08), transparent 16%),
+        linear-gradient(145deg, var(--bg1) 0%, var(--bg2) 38%, var(--bg3) 100%);
+      min-height:100vh;
+      line-height:1.55;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.10;
+      background-image:
+        radial-gradient(circle at 15% 25%, #fff 0.8px, transparent 1.2px),
+        radial-gradient(circle at 78% 42%, #fff 0.8px, transparent 1.2px),
+        radial-gradient(circle at 35% 65%, #fff 0.7px, transparent 1px),
+        radial-gradient(circle at 62% 78%, #fff 0.9px, transparent 1.3px);
+      background-size:150px 150px,170px 170px,180px 180px,200px 200px;
+      mix-blend-mode:soft-light;
+    }
+
+    .container{
+      width:min(var(--max), calc(100% - 24px));
+      margin:0 auto;
+      position:relative;
+      z-index:1;
+    }
+
+    .hero{
+      padding:22px 0 16px;
+    }
+
+    .hero-card{
+      position:relative;
+      overflow:hidden;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.06)),
+        linear-gradient(145deg, rgba(246,237,220,.96), rgba(245,234,212,.86));
+      border:1px solid rgba(255,255,255,.22);
+      border-radius:36px;
+      box-shadow:var(--shadow);
+      padding:42px 20px 30px;
+      text-align:center;
+    }
+
+    .hero-card::before{
+      content:"";
+      position:absolute;
+      inset:14px;
+      border:1px solid rgba(165,120,35,.18);
+      border-radius:28px;
+      pointer-events:none;
+    }
+
+    .eyebrow{
+      display:inline-block;
+      padding:8px 14px;
+      border-radius:999px;
+      background:rgba(255,249,236,.64);
+      border:1px solid rgba(125,93,29,.12);
+      color:#6f5b36;
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      margin-bottom:14px;
+    }
+
+    h1{
+      margin:0;
+      font-size:clamp(40px, 7vw, 78px);
+      line-height:1;
+      color:#223d40;
+    }
+
+    .hero-line{
+      width:220px;
+      height:1px;
+      margin:18px auto 14px;
+      background:linear-gradient(to right, transparent, rgba(139,103,34,.58), transparent);
+    }
+
+    .hero-text{
+      max-width:800px;
+      margin:0 auto;
+      color:var(--muted);
+      font-size:17px;
+    }
+
+    .toolbar-wrap{
+      position:sticky;
+      top:0;
+      z-index:20;
+      padding:10px 0 14px;
+      backdrop-filter:blur(8px);
+    }
+
+    .toolbar{
+      background:rgba(246,237,220,.92);
+      border:1px solid rgba(110,86,42,.12);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+
+    .toolbar-title{
+      margin:0 0 12px;
+      text-align:center;
+      color:#6f5f43;
+      font-size:14px;
+      letter-spacing:.10em;
+      text-transform:uppercase;
+    }
+
+    .toolbar-grid{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .toolbar-btn{
+      border:none;
+      cursor:pointer;
+      min-height:52px;
+      padding:10px 12px;
+      border-radius:16px;
+      background:linear-gradient(145deg, rgba(255,255,255,.8), rgba(237,225,200,.92));
+      border:1px solid rgba(125,93,31,.12);
+      color:#3f372c;
+      font-family:inherit;
+      font-size:14px;
+      transition:.25s ease;
+      box-shadow:0 5px 12px rgba(67,52,30,.07);
+    }
+
+    .toolbar-btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 20px rgba(67,52,30,.12);
+    }
+
+    .toolbar-btn.active{
+      background:linear-gradient(145deg, rgba(224,192,115,.95), rgba(248,238,208,.98));
+      color:#5a4217;
+      font-weight:bold;
+    }
+
+    .content{
+      padding:0 0 34px;
+    }
+
+    .menu-section{
+      display:none;
+      background:rgba(246,237,220,.97);
+      border:1px solid rgba(97,73,37,.12);
+      border-radius:30px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      position:relative;
+      margin-bottom:22px;
+    }
+
+    .menu-section.active{
+      display:block;
+      animation:fadeUp .35s ease;
+    }
+
+    @keyframes fadeUp{
+      from{opacity:0; transform:translateY(12px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+
+    .menu-section::before{
+      content:"";
+      position:absolute;
+      inset:14px;
+      border:1px solid rgba(159,123,52,.10);
+      border-radius:20px;
+      pointer-events:none;
+    }
+
+    .section-header{
+      padding:24px 22px 12px;
+      display:flex;
+      align-items:center;
+      gap:14px;
+      position:relative;
+      z-index:1;
+    }
+
+    .section-icon{
+      width:52px;
+      height:52px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      flex:0 0 52px;
+      font-size:22px;
+      background:radial-gradient(circle at 30% 30%, #fff2c8, #e3bd67 64%, #bf9341 100%);
+      color:#5c4214;
+      box-shadow:inset 0 2px 7px rgba(255,255,255,.55), 0 8px 18px rgba(186,143,55,.18);
+    }
+
+    .section-header h2{
+      margin:0;
+      font-size:clamp(28px, 4vw, 40px);
+      line-height:1.05;
+      color:var(--sea);
+    }
+
+    .section-sub{
+      margin:5px 0 0;
+      color:#7a6d59;
+      font-size:14px;
+      font-style:italic;
+    }
+
+    .section-body{
+      padding:10px 22px 24px;
+      position:relative;
+      z-index:1;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+    }
+
+    .item-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.58), rgba(255,255,255,.26));
+      border:1px solid rgba(109,90,56,.12);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:0 8px 18px rgba(24,38,40,.08);
+      transition:.25s ease;
+    }
+
+    .item-card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 14px 28px rgba(24,38,40,.14);
+    }
+
+    .item-image{
+      width:100%;
+      aspect-ratio: 16 / 10;
+      object-fit:cover;
+      display:block;
+      background:#ddd;
+    }
+
+    .item-content{
+      padding:14px 14px 15px;
+    }
+
+    .item-top{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:start;
+      margin-bottom:6px;
+    }
+
+    .item-name{
+      margin:0;
+      font-size:18px;
+      line-height:1.22;
+      color:#312a23;
+    }
+
+    .item-price{
+      white-space:nowrap;
+      font-weight:bold;
+      font-size:20px;
+      color:#6e5020;
+    }
+
+    .item-weight{
+      display:inline-block;
+      margin-bottom:7px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(216,180,106,.18);
+      color:#6f5a34;
+      font-size:13px;
+    }
+
+    .item-desc{
+      margin:0;
+      font-size:14px;
+      color:#675f53;
+    }
+
+    .subgroup{
+      margin-top:22px;
+    }
+
+    .subgroup h3{
+      margin:0 0 14px;
+      padding:0 2px 10px;
+      font-size:22px;
+      color:#3d5b59;
+      border-bottom:1px dashed rgba(116,89,39,.24);
+    }
+
+    .note{
+      margin:0 0 16px;
+      padding:12px 14px;
+      border-left:4px solid rgba(199,157,67,.6);
+      background:rgba(255,248,227,.6);
+      border-radius:0 14px 14px 0;
+      font-size:14px;
+      color:#695d49;
+    }
+
+    .footer{
+      padding:0 0 36px;
+    }
+
+    .footer-card{
+      background:rgba(248,239,219,.92);
+      border:1px solid rgba(89,71,38,.12);
+      border-radius:24px;
+      padding:16px 20px;
+      box-shadow:var(--shadow);
+      text-align:center;
+      color:#655b4b;
+      font-size:14px;
+    }
+
+    .top-btn{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      width:52px;
+      height:52px;
+      border:none;
+      border-radius:50%;
+      cursor:pointer;
+      z-index:30;
+      color:#5e4212;
+      font-size:22px;
+      background:radial-gradient(circle at 30% 30%, #fff3cb, #e5bf69 66%, #c89b43 100%);
+      box-shadow:0 12px 24px rgba(32,40,32,.25);
+      display:none;
+    }
+
+    @media (max-width:1100px){
+      .toolbar-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+      .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+
+    @media (max-width:780px){
+      .toolbar-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    }
+
+    @media (max-width:640px){
+      .container{width:min(100% - 16px, var(--max))}
+      .toolbar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .cards{grid-template-columns:1fr}
+      .hero-card{padding:34px 16px 24px}
+      .section-header,.section-body{padding-left:16px;padding-right:16px}
+      .item-top{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body id="top">
+
+  <header class="hero">
+    <div class="container">
+      <div class="hero-card">
+        <div class="eyebrow">шёпот прибоя • свечи на столе • романтика у воды</div>
+        <h1>Тихая гавань</h1>
+        <div class="hero-line"></div>
+        <p class="hero-text">
+          Онлайн-меню с панелью перехода по разделам. Нажмите на кнопку сверху,
+          чтобы открыть нужную секцию и увидеть блюда с картинками, граммовкой и ценой.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar-wrap">
+    <div class="container">
+      <div class="toolbar">
+        <h2 class="toolbar-title">Разделы меню</h2>
+        <div class="toolbar-grid">
+          <button class="toolbar-btn active" data-target="breakfasts">Завтраки</button>
+          <button class="toolbar-btn" data-target="cold-snacks">Холодные закуски</button>
+          <button class="toolbar-btn" data-target="hot-snacks">Горячие закуски</button>
+          <button class="toolbar-btn" data-target="salads">Салаты</button>
+          <button class="toolbar-btn" data-target="fried">Фритюр</button>
+          <button class="toolbar-btn" data-target="soups">Супы</button>
+          <button class="toolbar-btn" data-target="pasta">Пасты</button>
+          <button class="toolbar-btn" data-target="pizza">Пиццы</button>
+          <button class="toolbar-btn" data-target="main-courses">Горячие блюда</button>
+          <button class="toolbar-btn" data-target="side-dishes">Гарниры</button>
+          <button class="toolbar-btn" data-target="sauces">Соусы</button>
+          <button class="toolbar-btn" data-target="bread">Хлебная корзина</button>
+          <button class="toolbar-btn" data-target="desserts">Десерты</button>
+          <button class="toolbar-btn" data-target="kids-menu">Детское меню</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="container content">
+
+    <!-- ЗАВТРАКИ -->
+    <section class="menu-section active" id="breakfasts">
+      <div class="section-header">
+        <div class="section-icon">☀</div>
+        <div>
+          <h2>Завтраки</h2>
+          <p class="section-sub">Неспешное и уютное начало дня</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="cards">
+
+          <article class="item-card">
+            <img class="item-image" alt="Завтрак" src="data:image/svg+xml;utf8,
+            <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'>
+              <defs>
+                <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+                  <stop offset='0%' stop-color='%23f8edd1'/>
+                  <stop offset='100%' stop-color='%23d7b26b'/>
+                </linearGradient>
+              </defs>
+              <rect width='800' height='500' fill='url(%23g)'/>
+              <circle cx='250' cy='250' r='130' fill='%23ffffff' opacity='0.9'/>
+              <circle cx='250' cy='250' r='55' fill='%23f0c34d'/>
+              <rect x='430' y='180' width='180' height='120' rx='18' fill='%23fff8ea'/>
+              <text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Тихая гавань</text>
+            </svg>">
+            <div class="item-content">
+              <div class="item-top">
+                <h3 class="item-name">На выбор</h3>
+                <div class="item-price">250р</div>
+              </div>
+              <div class="item-weight">порция</div>
+              <p class="item-desc">Глазунья из 2-х яиц с тостом / омлет с тостом / скрембл с тостом</p>
+            </div>
+          </article>
+
+          <article class="item-card">
+            <img class="item-image" alt="Каша на кокосовом молоке" src="data:image/svg+xml;utf8,
+            <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'>
+              <rect width='800' height='500' fill='%23e9dfc6'/>
+              <ellipse cx='400' cy='260' rx='180' ry='90' fill='%23ffffff'/>
+              <ellipse cx='400' cy='240' rx='145' ry='50' fill='%23f4f1e7'/>
+              <text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Каша</text>
+            </svg>">
+            <div class="item-content">
+              <div class="item-top">
+                <h3 class="item-name">Каша на кокосовом молоке</h3>
+                <div class="item-price">300р</div>
+              </div>
+              <div class="item-weight">200гр</div>
+              <p class="item-desc">Нежная утренняя каша с мягким вкусом кокосового молока</p>
+            </div>
+          </article>
+
+          <article class="item-card">
+            <img class="item-image" alt="Каша дня" src="data:image/svg+xml;utf8,
+            <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'>
+              <rect width='800' height='500' fill='%23efe4cd'/>
+              <ellipse cx='400' cy='255' rx='180' ry='95' fill='%23fffaf1'/>
+              <ellipse cx='400' cy='238' rx='145' ry='48' fill='%23ead9aa'/>
+              <text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Каша дня</text>
+            </svg>">
+            <div class="item-content">
+              <div class="item-top">
+                <h3 class="item-name">Каша дня</h3>
+                <div class="item-price">200р</div>
+              </div>
+              <div class="item-weight">200гр</div>
+              <p class="item-desc">Домашняя каша по рецепту дня</p>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="subgroup">
+          <h3>Добавки — 70р</h3>
+          <div class="cards">
+
+            <article class="item-card">
+              <img class="item-image" alt="Ветчина" src="data:image/svg+xml;utf8,
+              <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23f1e4d9'/><ellipse cx='400' cy='250' rx='170' ry='90' fill='%23d5908b'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Ветчина</text></svg>">
+              <div class="item-content"><div class="item-top"><h3 class="item-name">Ветчина</h3><div class="item-price">70р</div></div><div class="item-weight">30гр</div></div>
+            </article>
+
+            <article class="item-card">
+              <img class="item-image" alt="Сосиска" src="data:image/svg+xml;utf8,
+              <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23efe0c8'/><rect x='220' y='205' width='360' height='90' rx='45' fill='%23c67b52'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Сосиска</text></svg>">
+              <div class="item-content"><div class="item-top"><h3 class="item-name">Сосиска</h3><div class="item-price">70р</div></div><div class="item-weight">1 шт.</div></div>
+            </article>
+
+            <article class="item-card">
+              <img class="item-image" alt="Помидор" src="data:image/svg+xml;utf8,
+              <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23f7ead9'/><circle cx='400' cy='245' r='95' fill='%23db5147'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Помидор</text></svg>">
+              <div class="item-content"><div class="item-top"><h3 class="item-name">Помидор</h3><div class="item-price">70р</div></div><div class="item-weight">30гр</div></div>
+            </article>
+
+            <article class="item-card">
+              <img class="item-image" alt="Перец болгарский" src="data:image/svg+xml;utf8,
+              <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23edf0d9'/><path d='M300 180 Q400 120 500 180 Q540 240 500 320 Q400 380 300 320 Q260 240 300 180Z' fill='%23de4d47'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Перец</text></svg>">
+              <div class="item-content"><div class="item-top"><h3 class="item-name">Перец болгарский</h3><div class="item-price">70р</div></div><div class="item-weight">30гр</div></div>
+            </article>
+
+            <article class="item-card">
+              <img class="item-image" alt="Шампиньоны" src="data:image/svg+xml;utf8,
+              <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23f1eadf'/><ellipse cx='400' cy='220' rx='140' ry='80' fill='%23c9b59b'/><rect x='350' y='220' width='100' height='100' rx='20' fill='%23decfbf'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Шампиньоны</text></svg>">
+              <div class="item-content"><div class="item-top"><h3 class="item-name">Шампиньоны</h3><div class="item-price">70р</div></div><div class="item-weight">30гр</div></div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ХОЛОДНЫЕ ЗАКУСКИ -->
+    <section class="menu-section" id="cold-snacks">
+      <div class="section-header">
+        <div class="section-icon">❄</div>
+        <div>
+          <h2>Холодные закуски</h2>
+          <p class="section-sub">Неспешные вкусы для начала вечера</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="cards">
+          <article class="item-card"><img class="item-image" alt="Язык с сыром и орехом" src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Язык отварной с сыром и грецким орехом</h3><div class="item-price">500р</div></div><div class="item-weight">150гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Сельдь с картофелем" src="https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Сельдь бочковая с картофелем, маринованным луком, зеленью и ароматным маслом</h3><div class="item-price">450р</div></div><div class="item-weight">270гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Сало с хлебом" src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Сало домашнее с бородинским хлебом и чесноком</h3><div class="item-price">400р</div></div><div class="item-weight">140гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Закуска к вину" src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Закуска к вину</h3><div class="item-price">1200р</div></div><div class="item-weight">250гр</div><p class="item-desc">Чеддар, пармезан, фета в кунжуте, крекер, оливки/маслины, орехи, пеперони, мёд</p></div></article>
+          <article class="item-card"><img class="item-image" alt="Овощная нарезка" src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Овощная нарезка</h3><div class="item-price">450р</div></div><div class="item-weight">220/40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Ассорти оливок и маслин" src="https://images.unsplash.com/photo-1528751014936-863e6e7a319c?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Ассорти оливок и маслин</h3><div class="item-price">300р</div></div><div class="item-weight">100гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Нарезка цитрусовая" src="https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Нарезка цитрусовая</h3><div class="item-price">350р</div></div><div class="item-weight">100гр</div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ГОРЯЧИЕ ЗАКУСКИ -->
+    <section class="menu-section" id="hot-snacks">
+      <div class="section-header">
+        <div class="section-icon">🔥</div>
+        <div>
+          <h2>Горячие закуски</h2>
+          <p class="section-sub">Тёплые акценты, будто пламя свечей</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="cards">
+          <article class="item-card"><img class="item-image" alt="Судак" src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Судак папильот в сливочно-чесночном соусе</h3><div class="item-price">550р</div></div><div class="item-weight">150гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Крылья баффало" src="https://images.unsplash.com/photo-1562967916-eb82221dfb36?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Крылья баффало с яблочным чатни</h3><div class="item-price">500р</div></div><div class="item-weight">300/40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Креветки" src="https://images.unsplash.com/photo-1625944230945-1b7dd3b949ab?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Креветки с соусом сладкий чили</h3><div class="item-price">550р</div></div><div class="item-weight">100/40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Драники" src="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Драники со сметаной</h3><div class="item-price">350р</div></div><div class="item-weight">150/40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Гренки" src="https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Гренки чесночные с пармезаном с соусом тар-тар</h3><div class="item-price">300р</div></div><div class="item-weight">100/40гр</div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- САЛАТЫ -->
+    <section class="menu-section" id="salads">
+      <div class="section-header">
+        <div class="section-icon">🥗</div>
+        <div>
+          <h2>Салаты</h2>
+          <p class="section-sub">Свежесть и выразительные сочетания</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="cards">
+          <article class="item-card"><img class="item-image" alt="Фирменный с ростбифом" src="https://images.unsplash.com/photo-1546793665-c74683f339c1?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Фирменный с ростбифом</h3><div class="item-price">700р</div></div><div class="item-weight">230гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="С баклажанами" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">С баклажанами</h3><div class="item-price">500р</div></div><div class="item-weight">230гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Цезарь с курицей" src="https://images.unsplash.com/photo-1551248429-40975aa4de74?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Цезарь с курицей</h3><div class="item-price">500р</div></div><div class="item-weight">200гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Цезарь с креветками" src="https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Цезарь с креветками</h3><div class="item-price">650р</div></div><div class="item-weight">200гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="С лососем и апельсином" src="https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">С лососем и апельсином</h3><div class="item-price">700р</div></div><div class="item-weight">205гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="С языком и ореховой заправкой" src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">С языком и ореховой заправкой</h3><div class="item-price">650р</div></div><div class="item-weight">220гр</div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ФРИТЮР -->
+    <section class="menu-section" id="fried">
+      <div class="section-header">
+        <div class="section-icon">🍟</div>
+        <div>
+          <h2>Фритюр</h2>
+          <p class="section-sub">Хрустящие закуски для компании</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="cards">
+          <article class="item-card"><img class="item-image" alt="Пивной сет" src="https://images.unsplash.com/photo-1518013431117-eb1465fa5752?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Пивной сет</h3><div class="item-price">700р</div></div><div class="item-weight">240гр</div><p class="item-desc">Кольца кальмара, кольца луковые, сырные шарики, дольки фри, соус кетчуп, соус чесночный</p></div></article>
+          <article class="item-card"><img class="item-image" alt="Наггетсы" src="https://images.unsplash.com/photo-1562967916-eb82221dfb36?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Наггетсы</h3><div class="item-price">300р</div></div><div class="item-weight">100/40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Кольца кальмара" src="https://images.unsplash.com/photo-1604908554168-3d2f3f96e65e?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Кольца кальмара</h3><div class="item-price">300р</div></div><div class="item-weight">100/40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Сырные шарики" src="https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Сырные шарики</h3><div class="item-price">350р</div></div><div class="item-weight">100/40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Картофель фри" src="https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Картофель фри</h3><div class="item-price">250р</div></div><div class="item-weight">100/40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Картофельные дольки" src="https://images.unsplash.com/photo-1518013431117-eb1465fa5752?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Картофельные дольки</h3><div class="item-price">250р</div></div><div class="item-weight">100/40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Луковые кольца" src="https://images.unsplash.com/photo-1639024471283-03518883512d?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Луковые кольца</h3><div class="item-price">250р</div></div><div class="item-weight">100/40гр</div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- СУПЫ -->
+    <section class="menu-section" id="soups">
+      <div class="section-header">
+        <div class="section-icon">🍲</div>
+        <div>
+          <h2>Супы</h2>
+          <p class="section-sub">Домашние и согревающие</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="cards">
+          <article class="item-card"><img class="item-image" alt="Суп-пюре картофельный" src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Суп-пюре картофельный с томленой говядиной</h3><div class="item-price">500р</div></div><div class="item-weight">300гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Борщ" src="https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Борщ с салом собственного производства с чесноком и бородинскими гренками</h3><div class="item-price">500р</div></div><div class="item-weight">400гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Уха финская" src="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Уха финская из двух видов рыб</h3><div class="item-price">500р</div></div><div class="item-weight">300гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Том-ям" src="https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Том-ям с креветками и мидиями</h3><div class="item-price">650р</div></div><div class="item-weight">300гр</div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ПАСТЫ -->
+    <section class="menu-section" id="pasta">
+      <div class="section-header">
+        <div class="section-icon">🍝</div>
+        <div>
+          <h2>Пасты</h2>
+          <p class="section-sub">От классики до ярких итальянских сочетаний</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="cards">
+          <article class="item-card"><img class="item-image" alt="Паста с красной рыбой" src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">С красной рыбой</h3><div class="item-price">600р</div></div><div class="item-weight">300гр</div><p class="item-desc">С кетой, черри, сливочным соусом и пармезаном</p></div></article>
+          <article class="item-card"><img class="item-image" alt="Карбонара" src="https://images.unsplash.com/photo-1608756687911-aa1599ab0386?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Карбонара</h3><div class="item-price">500р</div></div><div class="item-weight">300гр</div><p class="item-desc">С беконом и сливками, пармезаном</p></div></article>
+          <article class="item-card"><img class="item-image" alt="Болоньезе" src="https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Болоньезе</h3><div class="item-price">600р</div></div><div class="item-weight">300гр</div><p class="item-desc">Спагетти с классическим мясным соусом</p></div></article>
+          <article class="item-card"><img class="item-image" alt="Арабьята" src="https://images.unsplash.com/photo-1563379091339-03246963d96c?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Арабьята</h3><div class="item-price">500р</div></div><div class="item-weight">300гр</div><p class="item-desc">С томатным соусом, песто, вялеными томатами, маслинами, пармезаном и цукини</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ПИЦЦЫ -->
+    <section class="menu-section" id="pizza">
+      <div class="section-header">
+        <div class="section-icon">🍕</div>
+        <div>
+          <h2>Пиццы</h2>
+          <p class="section-sub">Для дружеских встреч и долгих разговоров</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="cards">
+          <article class="item-card"><img class="item-image" alt="Мясная родники" src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Мясная родники</h3><div class="item-price">700р</div></div><div class="item-weight">500гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Пицца карбонара" src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Карбонара</h3><div class="item-price">650р</div></div><div class="item-weight">500гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Цезарь с креветками" src="https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Цезарь с креветками</h3><div class="item-price">850р</div></div><div class="item-weight">500гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="4 сыра" src="https://images.unsplash.com/photo-1548365328-9f547fb0953b?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">4 сыра</h3><div class="item-price">650р</div></div><div class="item-weight">500гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Маргарита" src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Маргарита</h3><div class="item-price">650р</div></div><div class="item-weight">500гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Пеперони" src="https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Пеперони</h3><div class="item-price">650р</div></div><div class="item-weight">500гр</div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ГОРЯЧИЕ БЛЮДА -->
+    <section class="menu-section" id="main-courses">
+      <div class="section-header">
+        <div class="section-icon">🍽</div>
+        <div>
+          <h2>Горячие блюда</h2>
+          <p class="section-sub">Главные блюда вечера — сытные и выразительные</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="cards">
+          <article class="item-card"><img class="item-image" alt="Цыплёнок табака" src="https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Цыплёнок табака по-грузински с овощами на гриле с соусом тар-тар</h3><div class="item-price">800р</div></div><div class="item-weight">450/40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Шницель" src="https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Шницель из свиной вырезки с картофельными дольками и красным соусом</h3><div class="item-price">700р</div></div><div class="item-weight">260/40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Бефстроганов" src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Бефстроганов из говяжьей вырезки с картофельным пюре</h3><div class="item-price">750р</div></div><div class="item-weight">300гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Стейк языка телёнка" src="https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Стейк языка телёнка с картофелем и грибами</h3><div class="item-price">750р</div></div><div class="item-weight">300гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Рёбрышки свиные" src="https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Рёбрышки свиные</h3><div class="item-price">750р</div></div><div class="item-weight">250/80гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Филе судака" src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Филе судака с брокколи и фасолью с лимонным соусом</h3><div class="item-price">800р</div></div><div class="item-weight">200/40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Пельмени домашние" src="https://images.unsplash.com/photo-1521389508051-d7ffb5dc8df4?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Пельмени домашние со сметаной</h3><div class="item-price">600р</div></div><div class="item-weight">200/40гр</div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ГАРНИРЫ -->
+    <section class="menu-section" id="side-dishes">
+      <div class="section-header">
+        <div class="section-icon">🥔</div>
+        <div>
+          <h2>Гарниры</h2>
+          <p class="section-sub">Дополнения, которые завершают вкус блюда</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="cards">
+          <article class="item-card"><img class="item-image" alt="Овощи гриль" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Овощи гриль</h3><div class="item-price">350р</div></div><div class="item-weight">150гр</div><p class="item-desc">Шампиньоны, цукини, баклажан, перец болгарский</p></div></article>
+          <article class="item-card"><img class="item-image" alt="Овощи на пару" src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Овощи на пару</h3><div class="item-price">350р</div></div><div class="item-weight">150гр</div><p class="item-desc">Фасоль стручковая, брокколи, цветная капуста</p></div></article>
+          <article class="item-card"><img class="item-image" alt="Картофель отварной" src="https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Картофель отварной с зеленью и маслом</h3><div class="item-price">250р</div></div><div class="item-weight">150гр</div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- СОУСЫ -->
+    <section class="menu-section" id="sauces">
+      <div class="section-header">
+        <div class="section-icon">🫙</div>
+        <div>
+          <h2>Соусы</h2>
+          <p class="section-sub">Финальный штрих к вашему выбору</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <p class="note">Все соусы — 40гр, стоимость одной позиции — 80р.</p>
+        <div class="cards">
+          <article class="item-card"><img class="item-image" alt="Кетчуп" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23f5e6dd'/><rect x='315' y='120' width='170' height='250' rx='30' fill='%23c84c3c'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Кетчуп</text></svg>"><div class="item-content"><div class="item-top"><h3 class="item-name">Кетчуп</h3><div class="item-price">80р</div></div><div class="item-weight">40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Майонез" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23f3eddc'/><rect x='315' y='120' width='170' height='250' rx='30' fill='%23f0ead9'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Майонез</text></svg>"><div class="item-content"><div class="item-top"><h3 class="item-name">Майонез</h3><div class="item-price">80р</div></div><div class="item-weight">40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Сметана" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23f0e8dd'/><rect x='315' y='120' width='170' height='250' rx='30' fill='%23fffdf7'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Сметана</text></svg>"><div class="item-content"><div class="item-top"><h3 class="item-name">Сметана</h3><div class="item-price">80р</div></div><div class="item-weight">40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Горчица" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23f2ead2'/><rect x='315' y='120' width='170' height='250' rx='30' fill='%23d3ad38'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Горчица</text></svg>"><div class="item-content"><div class="item-top"><h3 class="item-name">Горчица</h3><div class="item-price">80р</div></div><div class="item-weight">40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Медово-горчичный" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23f7ecd3'/><rect x='315' y='120' width='170' height='250' rx='30' fill='%23d8a64b'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Медово-горчичный</text></svg>"><div class="item-content"><div class="item-top"><h3 class="item-name">Медово-горчичный</h3><div class="item-price">80р</div></div><div class="item-weight">40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Тар-тар" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23eef1ea'/><rect x='315' y='120' width='170' height='250' rx='30' fill='%23dde5d7'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Тар-тар</text></svg>"><div class="item-content"><div class="item-top"><h3 class="item-name">Тар-тар</h3><div class="item-price">80р</div></div><div class="item-weight">40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Сырный" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23f8efd8'/><rect x='315' y='120' width='170' height='250' rx='30' fill='%23f1cf61'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Сырный</text></svg>"><div class="item-content"><div class="item-top"><h3 class="item-name">Сырный</h3><div class="item-price">80р</div></div><div class="item-weight">40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Чесночный" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23f4eee3'/><rect x='315' y='120' width='170' height='250' rx='30' fill='%23f7f2e8'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Чесночный</text></svg>"><div class="item-content"><div class="item-top"><h3 class="item-name">Чесночный</h3><div class="item-price">80р</div></div><div class="item-weight">40гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Уксус 9%" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23edf1f2'/><rect x='335' y='100' width='130' height='270' rx='26' fill='%23dbe6ea'/><text x='400' y='430' font-size='42' text-anchor='middle' fill='%23584214'>Уксус 9%</text></svg>"><div class="item-content"><div class="item-top"><h3 class="item-name">Уксус 9%</h3><div class="item-price">80р</div></div><div class="item-weight">40гр</div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ХЛЕБ -->
+    <section class="menu-section" id="bread">
+      <div class="section-header">
+        <div class="section-icon">🥖</div>
+        <div>
+          <h2>Хлебная корзина</h2>
+          <p class="section-sub">Простая деталь, которая создаёт домашний уют</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="cards">
+          <article class="item-card">
+            <img class="item-image" alt="Хлебная корзина" src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=900&q=80">
+            <div class="item-content">
+              <div class="item-top">
+                <h3 class="item-name">Хлебная корзина</h3>
+                <div class="item-price">200р</div>
+              </div>
+              <div class="item-weight">1 шт.</div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ДЕСЕРТЫ -->
+    <section class="menu-section" id="desserts">
+      <div class="section-header">
+        <div class="section-icon">🍰</div>
+        <div>
+          <h2>Десерты</h2>
+          <p class="section-sub">Сладкое завершение ужина у воды</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="cards">
+          <article class="item-card"><img class="item-image" alt="Блинчики синабон" src="https://images.unsplash.com/photo-1506084868230-bb9d95c24759?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Блинчики синабон</h3><div class="item-price">300р</div></div><div class="item-weight">180гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Апельсиновый кекс" src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Апельсиновый кекс с заварным кремом</h3><div class="item-price">300р</div></div><div class="item-weight">150гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Таёжный десерт" src="https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Таёжный десерт с клюквой кедровым орехом</h3><div class="item-price">300р</div></div><div class="item-weight">170гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Маковый тарт" src="https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Маковый тарт</h3><div class="item-price">300р</div></div><div class="item-weight">150гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Чизкейк" src="https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Чизкейк в ассортименте</h3><div class="item-price">300р</div></div><div class="item-weight">125гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Торт Прага" src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Торт Прага</h3><div class="item-price">300р</div></div><div class="item-weight">125гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Блинчики" src="https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Блинчики</h3><div class="item-price">220р</div></div><div class="item-weight">150/40гр</div><p class="item-desc">Со сгущенкой, сметаной, джемом, мёдом</p></div></article>
+          <article class="item-card"><img class="item-image" alt="Мороженое" src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Мороженое</h3><div class="item-price">250р</div></div><div class="item-weight">150гр</div></div></article>
+          <article class="item-card"><img class="item-image" alt="Топпинги" src="https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Топпинги</h3><div class="item-price">80р</div></div><div class="item-weight">30гр</div><p class="item-desc">Шоколад, карамель, ваниль</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ДЕТСКОЕ МЕНЮ -->
+    <section class="menu-section" id="kids-menu">
+      <div class="section-header">
+        <div class="section-icon">🧸</div>
+        <div>
+          <h2>Детское меню</h2>
+          <p class="section-sub">Тёплое и понятное меню для маленьких гостей</p>
+        </div>
+      </div>
+      <div class="section-body">
+
+        <div class="subgroup">
+          <h3>Салаты и перекусы</h3>
+          <div class="cards">
+            <article class="item-card"><img class="item-image" alt="Овощной салатик" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Ешь на здоровьице</h3><div class="item-price">250р</div></div><div class="item-weight">130гр</div><p class="item-desc">Овощной салатик со сметаной</p></div></article>
+            <article class="item-card"><img class="item-image" alt="Цезарь с курочкой" src="https://images.unsplash.com/photo-1551248429-40975aa4de74?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Захотелось мне</h3><div class="item-price">270р</div></div><div class="item-weight">110гр</div><p class="item-desc">Цезарь с курочкой</p></div></article>
+            <article class="item-card"><img class="item-image" alt="Сендвич с ветчиной" src="https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Сендвич с ветчиной</h3><div class="item-price">280р</div></div><div class="item-weight">150гр</div></div></article>
+            <article class="item-card"><img class="item-image" alt="Сендвич с курицей" src="https://images.unsplash.com/photo-1553909489-cd47e0ef937f?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Сендвич с курицей</h3><div class="item-price">280р</div></div><div class="item-weight">150гр</div></div></article>
+          </div>
+        </div>
+
+        <div class="subgroup">
+          <h3>Суп</h3>
+          <div class="cards">
+            <article class="item-card"><img class="item-image" alt="Домашний куриный супчик" src="https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Поспали, теперь можно и поесть</h3><div class="item-price">250р</div></div><div class="item-weight">220гр</div><p class="item-desc">Домашний куриный супчик с сухариками и перепелиным яйцом</p></div></article>
+          </div>
+        </div>
+
+        <div class="subgroup">
+          <h3>Горячее</h3>
+          <div class="cards">
+            <article class="item-card"><img class="item-image" alt="Макарошки с сосиской" src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">И того и другого, можно без хлеба</h3><div class="item-price">250р</div></div><div class="item-weight">150гр</div><p class="item-desc">Макарошки с сосиской со сливочным маслицем</p></div></article>
+            <article class="item-card"><img class="item-image" alt="Макарошки с сыром" src="https://images.unsplash.com/photo-1608756687911-aa1599ab0386?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Правда вкусно</h3><div class="item-price">250р</div></div><div class="item-weight">130гр</div><p class="item-desc">Макарошки с сыром и маслом</p></div></article>
+            <article class="item-card"><img class="item-image" alt="Пюре с куриной котлеткой" src="https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Хороший аппетит</h3><div class="item-price">400р</div></div><div class="item-weight">110/50гр</div><p class="item-desc">Картофельное пюре с куриной котлеткой на пару</p></div></article>
+            <article class="item-card"><img class="item-image" alt="Шашлычок из куриного бедра" src="https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Садись за стол скорее</h3><div class="item-price">470р</div></div><div class="item-weight">200/40гр</div><p class="item-desc">Шашлычок из куриного бедра с картофельными дольками фри и кетчупом</p></div></article>
+            <article class="item-card"><img class="item-image" alt="Пельмешки куриные" src="https://images.unsplash.com/photo-1521389508051-d7ffb5dc8df4?auto=format&fit=crop&w=900&q=80"><div class="item-content"><div class="item-top"><h3 class="item-name">Волшебная еда</h3><div class="item-price">450р</div></div><div class="item-weight">200/40гр</div><p class="item-desc">Пельмешки куриные со сметаной</p></div></article>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-card">
+        <strong>Тихая гавань</strong> — меню с навигацией по разделам, карточками блюд и визуальной подачей для онлайн-формата.
+      </div>
+    </div>
+  </footer>
+
+  <button class="top-btn" id="topBtn" aria-label="Наверх">↑</button>
+
+  <script>
+    const buttons = document.querySelectorAll('.toolbar-btn');
+    const sections = document.querySelectorAll('.menu-section');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const targetId = button.dataset.target;
+
+        buttons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        sections.forEach(section => {
+          section.classList.remove('active');
+        });
+
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) {
+          targetSection.classList.add('active');
+          window.scrollTo({
+            top: targetSection.offsetTop - 110,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+
+    const topBtn = document.getElementById('topBtn');
+
+    window.addEventListener('scroll', function () {
+      if (window.scrollY > 500) {
+        topBtn.style.display = 'block';
+      } else {
+        topBtn.style.display = 'none';
+      }
+    });
+
+    topBtn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+
+</body>
+</html>

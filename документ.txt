@@ -1,0 +1,1155 @@
+﻿бегущий текст
+
+
+npm install gsap
+import TextType from './TextType';
+
+<TextType 
+  text={["Text typing effect", "for your websites", "Happy coding!"]}
+  typingSpeed={75}
+  pauseDuration={1500}
+  showCursor
+  cursorCharacter="_"
+  texts={["Welcome to React Bits! Good to see you!","Build some amazing experiences!"]}
+  deletingSpeed={50}
+  variableSpeedEnabled={false}
+  variableSpeedMin={60}
+  variableSpeedMax={120}
+  cursorBlinkDuration={0.5}
+/>
+import TextType from './TextType';
+
+<TextType 
+  text={["Text typing effect", "for your websites", "Happy coding!"]}
+  typingSpeed={75}
+  pauseDuration={1500}
+  showCursor
+  cursorCharacter="_"
+  texts={["Welcome to React Bits! Good to see you!","Build some amazing experiences!"]}
+  deletingSpeed={50}
+  variableSpeedEnabled={false}
+  variableSpeedMin={60}
+  variableSpeedMax={120}
+  cursorBlinkDuration={0.5}
+/>
+'use client';
+
+import { useEffect, useRef, useState, createElement, useMemo, useCallback } from 'react';
+import { gsap } from 'gsap';
+import './TextType.css';
+
+const TextType = ({
+  text,
+  as: Component = 'div',
+  typingSpeed = 50,
+  initialDelay = 0,
+  pauseDuration = 2000,
+  deletingSpeed = 30,
+  loop = true,
+  className = '',
+  showCursor = true,
+  hideCursorWhileTyping = false,
+  cursorCharacter = '|',
+  cursorClassName = '',
+  cursorBlinkDuration = 0.5,
+  textColors = [],
+  variableSpeed,
+  onSentenceComplete,
+  startOnVisible = false,
+  reverseMode = false,
+  ...props
+}) => {
+  const [displayedText, setDisplayedText] = useState('');
+  const [currentCharIndex, setCurrentCharIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(!startOnVisible);
+  const cursorRef = useRef(null);
+  const containerRef = useRef(null);
+
+  const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [text]);
+
+  const getRandomSpeed = useCallback(() => {
+    if (!variableSpeed) return typingSpeed;
+    const { min, max } = variableSpeed;
+    return Math.random() * (max - min) + min;
+  }, [variableSpeed, typingSpeed]);
+
+  const getCurrentTextColor = () => {
+    if (textColors.length === 0) return 'inherit';
+    return textColors[currentTextIndex % textColors.length];
+  };
+
+  useEffect(() => {
+    if (!startOnVisible || !containerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [startOnVisible]);
+
+  useEffect(() => {
+    if (showCursor && cursorRef.current) {
+      gsap.set(cursorRef.current, { opacity: 1 });
+      gsap.to(cursorRef.current, {
+        opacity: 0,
+        duration: cursorBlinkDuration,
+        repeat: -1,
+        yoyo: true,
+        ease: 'power2.inOut'
+      });
+    }
+  }, [showCursor, cursorBlinkDuration]);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    let timeout;
+    const currentText = textArray[currentTextIndex];
+    const processedText = reverseMode ? currentText.split('').reverse().join('') : currentText;
+
+    const executeTypingAnimation = () => {
+      if (isDeleting) {
+        if (displayedText === '') {
+          setIsDeleting(false);
+          if (currentTextIndex === textArray.length - 1 && !loop) {
+            return;
+          }
+
+          if (onSentenceComplete) {
+            onSentenceComplete(textArray[currentTextIndex], currentTextIndex);
+          }
+
+          setCurrentTextIndex(prev => (prev + 1) % textArray.length);
+          setCurrentCharIndex(0);
+          timeout = setTimeout(() => {}, pauseDuration);
+        } else {
+          timeout = setTimeout(() => {
+            setDisplayedText(prev => prev.slice(0, -1));
+          }, deletingSpeed);
+        }
+      } else {
+        if (currentCharIndex < processedText.length) {
+          timeout = setTimeout(
+            () => {
+              setDisplayedText(prev => prev + processedText[currentCharIndex]);
+              setCurrentCharIndex(prev => prev + 1);
+            },
+            variableSpeed ? getRandomSpeed() : typingSpeed
+          );
+        } else if (textArray.length >= 1) {
+          if (!loop && currentTextIndex === textArray.length - 1) return;
+          timeout = setTimeout(() => {
+            setIsDeleting(true);
+          }, pauseDuration);
+        }
+      }
+    };
+
+    if (currentCharIndex === 0 && !isDeleting && displayedText === '') {
+      timeout = setTimeout(executeTypingAnimation, initialDelay);
+    } else {
+      executeTypingAnimation();
+    }
+
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    currentCharIndex,
+    displayedText,
+    isDeleting,
+    typingSpeed,
+    deletingSpeed,
+    pauseDuration,
+    textArray,
+    currentTextIndex,
+    loop,
+    initialDelay,
+    isVisible,
+    reverseMode,
+    variableSpeed,
+    onSentenceComplete
+  ]);
+
+  const shouldHideCursor =
+    hideCursorWhileTyping && (currentCharIndex < textArray[currentTextIndex].length || isDeleting);
+
+  return createElement(
+    Component,
+    {
+      ref: containerRef,
+      className: `text-type ${className}`,
+      ...props
+    },
+    <span className="text-type__content" style={{ color: getCurrentTextColor() || 'inherit' }}>
+      {displayedText}
+    </span>,
+    showCursor && (
+      <span
+        ref={cursorRef}
+        className={`text-type__cursor ${cursorClassName} ${shouldHideCursor ? 'text-type__cursor--hidden' : ''}`}
+      >
+        {cursorCharacter}
+      </span>
+    )
+  );
+};
+
+export default TextType;
+.text-type {
+  display: inline-block;
+  white-space: pre-wrap;
+}
+
+.text-type__cursor {
+  margin-left: 0.25rem;
+  display: inline-block;
+  opacity: 1;
+}
+
+.text-type__cursor--hidden {
+  display: none;
+}
+
+
+
+
+
+
+
+
+антигравитация, летящие в разные стороны типа феерверков
+
+npm install three @react-three/fiber
+import Antigravity from './Antigravity';
+
+<div style={{ width: '100%', height: '400px', position: 'relative' }}>
+  <Antigravity
+    count={300}
+    magnetRadius={6}
+    ringRadius={7}
+    waveSpeed={0.4}
+    waveAmplitude={1}
+    particleSize={1.5}
+    lerpSpeed={0.05}
+    color="#5227FF"
+    autoAnimate
+    particleVariance={1}
+    rotationSpeed={0}
+    depthFactor={1}
+    pulseSpeed={3}
+    particleShape="capsule"
+    fieldStrength={10}
+/>
+</div>
+/* eslint-disable react/no-unknown-property */
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useMemo, useRef } from 'react';
+import * as THREE from 'three';
+
+const AntigravityInner = ({
+  count = 300,
+  magnetRadius = 10,
+  ringRadius = 10,
+  waveSpeed = 0.4,
+  waveAmplitude = 1,
+  particleSize = 2,
+  lerpSpeed = 0.1,
+  color = '#FF9FFC',
+  autoAnimate = false,
+  particleVariance = 1,
+  rotationSpeed = 0,
+  depthFactor = 1,
+  pulseSpeed = 3,
+  particleShape = 'capsule',
+  fieldStrength = 10
+}) => {
+  const meshRef = useRef(null);
+  const { viewport } = useThree();
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  const lastMousePos = useRef({ x: 0, y: 0 });
+  const lastMouseMoveTime = useRef(0);
+  const virtualMouse = useRef({ x: 0, y: 0 });
+
+  const particles = useMemo(() => {
+    const temp = [];
+    const width = viewport.width || 100;
+    const height = viewport.height || 100;
+
+    for (let i = 0; i < count; i++) {
+      const t = Math.random() * 100;
+      const factor = 20 + Math.random() * 100;
+      const speed = 0.01 + Math.random() / 200;
+      const xFactor = -50 + Math.random() * 100;
+      const yFactor = -50 + Math.random() * 100;
+      const zFactor = -50 + Math.random() * 100;
+
+      const x = (Math.random() - 0.5) * width;
+      const y = (Math.random() - 0.5) * height;
+      const z = (Math.random() - 0.5) * 20;
+
+      const randomRadiusOffset = (Math.random() - 0.5) * 2;
+
+      temp.push({
+        t,
+        factor,
+        speed,
+        xFactor,
+        yFactor,
+        zFactor,
+        mx: x,
+        my: y,
+        mz: z,
+        cx: x,
+        cy: y,
+        cz: z,
+        vx: 0,
+        vy: 0,
+        vz: 0,
+        randomRadiusOffset
+      });
+    }
+    return temp;
+  }, [count, viewport.width, viewport.height]);
+
+  useFrame(state => {
+    const mesh = meshRef.current;
+    if (!mesh) return;
+
+    const { viewport: v, pointer: m } = state;
+
+    const mouseDist = Math.sqrt(Math.pow(m.x - lastMousePos.current.x, 2) + Math.pow(m.y - lastMousePos.current.y, 2));
+
+    if (mouseDist > 0.001) {
+      lastMouseMoveTime.current = Date.now();
+      lastMousePos.current = { x: m.x, y: m.y };
+    }
+
+    let destX = (m.x * v.width) / 2;
+    let destY = (m.y * v.height) / 2;
+
+    if (autoAnimate && Date.now() - lastMouseMoveTime.current > 2000) {
+      const time = state.clock.getElapsedTime();
+      destX = Math.sin(time * 0.5) * (v.width / 4);
+      destY = Math.cos(time * 0.5 * 2) * (v.height / 4);
+    }
+
+    const smoothFactor = 0.05;
+    virtualMouse.current.x += (destX - virtualMouse.current.x) * smoothFactor;
+    virtualMouse.current.y += (destY - virtualMouse.current.y) * smoothFactor;
+
+    const targetX = virtualMouse.current.x;
+    const targetY = virtualMouse.current.y;
+
+    const globalRotation = state.clock.getElapsedTime() * rotationSpeed;
+
+    particles.forEach((particle, i) => {
+      let { t, speed, mx, my, mz, cz, randomRadiusOffset } = particle;
+
+      t = particle.t += speed / 2;
+
+      const projectionFactor = 1 - cz / 50;
+      const projectedTargetX = targetX * projectionFactor;
+      const projectedTargetY = targetY * projectionFactor;
+
+      const dx = mx - projectedTargetX;
+      const dy = my - projectedTargetY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      let targetPos = { x: mx, y: my, z: mz * depthFactor };
+
+      if (dist < magnetRadius) {
+        const angle = Math.atan2(dy, dx) + globalRotation;
+
+        const wave = Math.sin(t * waveSpeed + angle) * (0.5 * waveAmplitude);
+        const deviation = randomRadiusOffset * (5 / (fieldStrength + 0.1));
+
+        const currentRingRadius = ringRadius + wave + deviation;
+
+        targetPos.x = projectedTargetX + currentRingRadius * Math.cos(angle);
+        targetPos.y = projectedTargetY + currentRingRadius * Math.sin(angle);
+        targetPos.z = mz * depthFactor + Math.sin(t) * (1 * waveAmplitude * depthFactor);
+      }
+
+      particle.cx += (targetPos.x - particle.cx) * lerpSpeed;
+      particle.cy += (targetPos.y - particle.cy) * lerpSpeed;
+      particle.cz += (targetPos.z - particle.cz) * lerpSpeed;
+
+      dummy.position.set(particle.cx, particle.cy, particle.cz);
+
+      dummy.lookAt(projectedTargetX, projectedTargetY, particle.cz);
+      dummy.rotateX(Math.PI / 2);
+
+      const currentDistToMouse = Math.sqrt(
+        Math.pow(particle.cx - projectedTargetX, 2) + Math.pow(particle.cy - projectedTargetY, 2)
+      );
+
+      const distFromRing = Math.abs(currentDistToMouse - ringRadius);
+      let scaleFactor = 1 - distFromRing / 10;
+
+      scaleFactor = Math.max(0, Math.min(1, scaleFactor));
+
+      const finalScale = scaleFactor * (0.8 + Math.sin(t * pulseSpeed) * 0.2 * particleVariance) * particleSize;
+      dummy.scale.set(finalScale, finalScale, finalScale);
+
+      dummy.updateMatrix();
+
+      mesh.setMatrixAt(i, dummy.matrix);
+    });
+
+    mesh.instanceMatrix.needsUpdate = true;
+  });
+
+  return (
+    <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+      {particleShape === 'capsule' && <capsuleGeometry args={[0.1, 0.4, 4, 8]} />}
+      {particleShape === 'sphere' && <sphereGeometry args={[0.2, 16, 16]} />}
+      {particleShape === 'box' && <boxGeometry args={[0.3, 0.3, 0.3]} />}
+      {particleShape === 'tetrahedron' && <tetrahedronGeometry args={[0.3]} />}
+      <meshBasicMaterial color={color} />
+    </instancedMesh>
+  );
+};
+
+const Antigravity = props => {
+  return (
+    <Canvas camera={{ position: [0, 0, 50], fov: 35 }}>
+      <AntigravityInner {...props} />
+    </Canvas>
+  );
+};
+
+export default Antigravity;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+курсор мишень
+
+
+npm install gsap
+import TargetCursor from './TargetCursor';
+
+export default function App() {
+  return (
+    <div>
+      <TargetCursor 
+        spinDuration={2}
+        hideDefaultCursor
+        parallaxOn
+  hoverDuration={0.2}
+/>
+      
+      <h1>Hover over the elements below</h1>
+      <button className="cursor-target">Click me!</button>
+      <div className="cursor-target">Hover target</div>
+    </div>
+  );
+}
+import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { gsap } from 'gsap';
+import './TargetCursor.css';
+
+const TargetCursor = ({
+  targetSelector = '.cursor-target',
+  spinDuration = 2,
+  hideDefaultCursor = true,
+  hoverDuration = 0.2,
+  parallaxOn = true
+}) => {
+  const cursorRef = useRef(null);
+  const cornersRef = useRef(null);
+  const spinTl = useRef(null);
+  const dotRef = useRef(null);
+
+  const isActiveRef = useRef(false);
+  const targetCornerPositionsRef = useRef(null);
+  const tickerFnRef = useRef(null);
+  const activeStrengthRef = useRef(0);
+
+  const isMobile = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isSmallScreen = window.innerWidth <= 768;
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+    const isMobileUserAgent = mobileRegex.test(userAgent.toLowerCase());
+    return (hasTouchScreen && isSmallScreen) || isMobileUserAgent;
+  }, []);
+
+  const constants = useMemo(
+    () => ({
+      borderWidth: 3,
+      cornerSize: 12
+    }),
+    []
+  );
+
+  const moveCursor = useCallback((x, y) => {
+    if (!cursorRef.current) return;
+    gsap.to(cursorRef.current, {
+      x,
+      y,
+      duration: 0.1,
+      ease: 'power3.out'
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isMobile || !cursorRef.current) return;
+
+    const originalCursor = document.body.style.cursor;
+    if (hideDefaultCursor) {
+      document.body.style.cursor = 'none';
+    }
+
+    const cursor = cursorRef.current;
+    cornersRef.current = cursor.querySelectorAll('.target-cursor-corner');
+
+    let activeTarget = null;
+    let currentLeaveHandler = null;
+    let resumeTimeout = null;
+
+    const cleanupTarget = target => {
+      if (currentLeaveHandler) {
+        target.removeEventListener('mouseleave', currentLeaveHandler);
+      }
+      currentLeaveHandler = null;
+    };
+
+    gsap.set(cursor, {
+      xPercent: -50,
+      yPercent: -50,
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2
+    });
+
+    const createSpinTimeline = () => {
+      if (spinTl.current) {
+        spinTl.current.kill();
+      }
+      spinTl.current = gsap
+        .timeline({ repeat: -1 })
+        .to(cursor, { rotation: '+=360', duration: spinDuration, ease: 'none' });
+    };
+
+    createSpinTimeline();
+
+    const tickerFn = () => {
+      if (!targetCornerPositionsRef.current || !cursorRef.current || !cornersRef.current) {
+        return;
+      }
+
+      const strength = activeStrengthRef.current;
+      if (strength === 0) return;
+
+      const cursorX = gsap.getProperty(cursorRef.current, 'x');
+      const cursorY = gsap.getProperty(cursorRef.current, 'y');
+
+      const corners = Array.from(cornersRef.current);
+      corners.forEach((corner, i) => {
+        const currentX = gsap.getProperty(corner, 'x');
+        const currentY = gsap.getProperty(corner, 'y');
+
+        const targetX = targetCornerPositionsRef.current[i].x - cursorX;
+        const targetY = targetCornerPositionsRef.current[i].y - cursorY;
+
+        const finalX = currentX + (targetX - currentX) * strength;
+        const finalY = currentY + (targetY - currentY) * strength;
+
+        const duration = strength >= 0.99 ? (parallaxOn ? 0.2 : 0) : 0.05;
+
+        gsap.to(corner, {
+          x: finalX,
+          y: finalY,
+          duration: duration,
+          ease: duration === 0 ? 'none' : 'power1.out',
+          overwrite: 'auto'
+        });
+      });
+    };
+
+    tickerFnRef.current = tickerFn;
+
+    const moveHandler = e => moveCursor(e.clientX, e.clientY);
+    window.addEventListener('mousemove', moveHandler);
+
+    const scrollHandler = () => {
+      if (!activeTarget || !cursorRef.current) return;
+      const mouseX = gsap.getProperty(cursorRef.current, 'x');
+      const mouseY = gsap.getProperty(cursorRef.current, 'y');
+      const elementUnderMouse = document.elementFromPoint(mouseX, mouseY);
+      const isStillOverTarget =
+        elementUnderMouse &&
+        (elementUnderMouse === activeTarget || elementUnderMouse.closest(targetSelector) === activeTarget);
+      if (!isStillOverTarget) {
+        if (currentLeaveHandler) {
+          currentLeaveHandler();
+        }
+      }
+    };
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+
+    const mouseDownHandler = () => {
+      if (!dotRef.current) return;
+      gsap.to(dotRef.current, { scale: 0.7, duration: 0.3 });
+      gsap.to(cursorRef.current, { scale: 0.9, duration: 0.2 });
+    };
+
+    const mouseUpHandler = () => {
+      if (!dotRef.current) return;
+      gsap.to(dotRef.current, { scale: 1, duration: 0.3 });
+      gsap.to(cursorRef.current, { scale: 1, duration: 0.2 });
+    };
+
+    window.addEventListener('mousedown', mouseDownHandler);
+    window.addEventListener('mouseup', mouseUpHandler);
+
+    const enterHandler = e => {
+      const directTarget = e.target;
+      const allTargets = [];
+      let current = directTarget;
+      while (current && current !== document.body) {
+        if (current.matches(targetSelector)) {
+          allTargets.push(current);
+        }
+        current = current.parentElement;
+      }
+      const target = allTargets[0] || null;
+      if (!target || !cursorRef.current || !cornersRef.current) return;
+      if (activeTarget === target) return;
+      if (activeTarget) {
+        cleanupTarget(activeTarget);
+      }
+      if (resumeTimeout) {
+        clearTimeout(resumeTimeout);
+        resumeTimeout = null;
+      }
+
+      activeTarget = target;
+      const corners = Array.from(cornersRef.current);
+      corners.forEach(corner => gsap.killTweensOf(corner));
+
+      gsap.killTweensOf(cursorRef.current, 'rotation');
+      spinTl.current?.pause();
+      gsap.set(cursorRef.current, { rotation: 0 });
+
+      const rect = target.getBoundingClientRect();
+      const { borderWidth, cornerSize } = constants;
+      const cursorX = gsap.getProperty(cursorRef.current, 'x');
+      const cursorY = gsap.getProperty(cursorRef.current, 'y');
+
+      targetCornerPositionsRef.current = [
+        { x: rect.left - borderWidth, y: rect.top - borderWidth },
+        { x: rect.right + borderWidth - cornerSize, y: rect.top - borderWidth },
+        { x: rect.right + borderWidth - cornerSize, y: rect.bottom + borderWidth - cornerSize },
+        { x: rect.left - borderWidth, y: rect.bottom + borderWidth - cornerSize }
+      ];
+
+      isActiveRef.current = true;
+      gsap.ticker.add(tickerFnRef.current);
+
+      gsap.to(activeStrengthRef, {
+        current: 1,
+        duration: hoverDuration,
+        ease: 'power2.out'
+      });
+
+      corners.forEach((corner, i) => {
+        gsap.to(corner, {
+          x: targetCornerPositionsRef.current[i].x - cursorX,
+          y: targetCornerPositionsRef.current[i].y - cursorY,
+          duration: 0.2,
+          ease: 'power2.out'
+        });
+      });
+
+      const leaveHandler = () => {
+        gsap.ticker.remove(tickerFnRef.current);
+
+        isActiveRef.current = false;
+        targetCornerPositionsRef.current = null;
+        gsap.set(activeStrengthRef, { current: 0, overwrite: true });
+        activeTarget = null;
+
+        if (cornersRef.current) {
+          const corners = Array.from(cornersRef.current);
+          gsap.killTweensOf(corners);
+          const { cornerSize } = constants;
+          const positions = [
+            { x: -cornerSize * 1.5, y: -cornerSize * 1.5 },
+            { x: cornerSize * 0.5, y: -cornerSize * 1.5 },
+            { x: cornerSize * 0.5, y: cornerSize * 0.5 },
+            { x: -cornerSize * 1.5, y: cornerSize * 0.5 }
+          ];
+          const tl = gsap.timeline();
+          corners.forEach((corner, index) => {
+            tl.to(
+              corner,
+              {
+                x: positions[index].x,
+                y: positions[index].y,
+                duration: 0.3,
+                ease: 'power3.out'
+              },
+              0
+            );
+          });
+        }
+
+        resumeTimeout = setTimeout(() => {
+          if (!activeTarget && cursorRef.current && spinTl.current) {
+            const currentRotation = gsap.getProperty(cursorRef.current, 'rotation');
+            const normalizedRotation = currentRotation % 360;
+            spinTl.current.kill();
+            spinTl.current = gsap
+              .timeline({ repeat: -1 })
+              .to(cursorRef.current, { rotation: '+=360', duration: spinDuration, ease: 'none' });
+            gsap.to(cursorRef.current, {
+              rotation: normalizedRotation + 360,
+              duration: spinDuration * (1 - normalizedRotation / 360),
+              ease: 'none',
+              onComplete: () => {
+                spinTl.current?.restart();
+              }
+            });
+          }
+          resumeTimeout = null;
+        }, 50);
+
+        cleanupTarget(target);
+      };
+
+      currentLeaveHandler = leaveHandler;
+      target.addEventListener('mouseleave', leaveHandler);
+    };
+
+    window.addEventListener('mouseover', enterHandler, { passive: true });
+
+    return () => {
+      if (tickerFnRef.current) {
+        gsap.ticker.remove(tickerFnRef.current);
+      }
+
+      window.removeEventListener('mousemove', moveHandler);
+      window.removeEventListener('mouseover', enterHandler);
+      window.removeEventListener('scroll', scrollHandler);
+      window.removeEventListener('mousedown', mouseDownHandler);
+      window.removeEventListener('mouseup', mouseUpHandler);
+
+      if (activeTarget) {
+        cleanupTarget(activeTarget);
+      }
+
+      spinTl.current?.kill();
+      document.body.style.cursor = originalCursor;
+
+      isActiveRef.current = false;
+      targetCornerPositionsRef.current = null;
+      activeStrengthRef.current = 0;
+    };
+  }, [targetSelector, spinDuration, moveCursor, constants, hideDefaultCursor, isMobile, hoverDuration, parallaxOn]);
+
+  useEffect(() => {
+    if (isMobile || !cursorRef.current || !spinTl.current) return;
+    if (spinTl.current.isActive()) {
+      spinTl.current.kill();
+      spinTl.current = gsap
+        .timeline({ repeat: -1 })
+        .to(cursorRef.current, { rotation: '+=360', duration: spinDuration, ease: 'none' });
+    }
+  }, [spinDuration, isMobile]);
+
+  if (isMobile) {
+    return null;
+  }
+
+  return (
+    <div ref={cursorRef} className="target-cursor-wrapper">
+      <div ref={dotRef} className="target-cursor-dot" />
+      <div className="target-cursor-corner corner-tl" />
+      <div className="target-cursor-corner corner-tr" />
+      <div className="target-cursor-corner corner-br" />
+      <div className="target-cursor-corner corner-bl" />
+    </div>
+  );
+};
+
+export default TargetCursor;
+.target-cursor-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  transform: translate(-50%, -50%);
+}
+
+.target-cursor-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  background: #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+}
+
+.target-cursor-corner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border: 3px solid #fff;
+  will-change: transform;
+}
+
+.corner-tl {
+  transform: translate(-150%, -150%);
+  border-right: none;
+  border-bottom: none;
+}
+
+.corner-tr {
+  transform: translate(50%, -150%);
+  border-left: none;
+  border-bottom: none;
+}
+
+.corner-br {
+  transform: translate(50%, 50%);
+  border-left: none;
+  border-top: none;
+}
+
+.corner-bl {
+  transform: translate(-150%, 50%);
+  border-right: none;
+  border-top: none;
+}
+
+
+
+
+
+
+
+
+сияние 
+
+
+npm install ogl
+import SoftAurora from './SoftAurora';
+  
+<SoftAurora
+  speed={0.6}
+  scale={1.5}
+  brightness={1}
+  color1="#f7f7f7"
+  color2="#e100ff"
+  noiseFrequency={2.5}
+  noiseAmplitude={1}
+  bandHeight={0.5}
+  bandSpread={1}
+  octaveDecay={0.1}
+  layerOffset={0}
+  colorSpeed={1}
+  enableMouseInteraction
+  mouseInfluence={0.25}
+/>
+import { Renderer, Program, Mesh, Triangle } from 'ogl';
+import { useEffect, useRef } from 'react';
+
+import './SoftAurora.css';
+
+function hexToVec3(hex) {
+  const h = hex.replace('#', '');
+  return [
+    parseInt(h.slice(0, 2), 16) / 255,
+    parseInt(h.slice(2, 4), 16) / 255,
+    parseInt(h.slice(4, 6), 16) / 255
+  ];
+}
+
+const vertexShader = `
+attribute vec2 uv;
+attribute vec2 position;
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position, 0, 1);
+}
+`;
+
+const fragmentShader = `
+precision highp float;
+
+uniform float uTime;
+uniform vec3 uResolution;
+uniform float uSpeed;
+uniform float uScale;
+uniform float uBrightness;
+uniform vec3 uColor1;
+uniform vec3 uColor2;
+uniform float uNoiseFreq;
+uniform float uNoiseAmp;
+uniform float uBandHeight;
+uniform float uBandSpread;
+uniform float uOctaveDecay;
+uniform float uLayerOffset;
+uniform float uColorSpeed;
+uniform vec2 uMouse;
+uniform float uMouseInfluence;
+uniform bool uEnableMouse;
+
+#define TAU 6.28318
+
+vec3 gradientHash(vec3 p) {
+  p = vec3(
+    dot(p, vec3(127.1, 311.7, 234.6)),
+    dot(p, vec3(269.5, 183.3, 198.3)),
+    dot(p, vec3(169.5, 283.3, 156.9))
+  );
+  vec3 h = fract(sin(p) * 43758.5453123);
+  float phi = acos(2.0 * h.x - 1.0);
+  float theta = TAU * h.y;
+  return vec3(cos(theta) * sin(phi), sin(theta) * cos(phi), cos(phi));
+}
+
+float quinticSmooth(float t) {
+  float t2 = t * t;
+  float t3 = t * t2;
+  return 6.0 * t3 * t2 - 15.0 * t2 * t2 + 10.0 * t3;
+}
+
+vec3 cosineGradient(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
+  return a + b * cos(TAU * (c * t + d));
+}
+
+float perlin3D(float amplitude, float frequency, float px, float py, float pz) {
+  float x = px * frequency;
+  float y = py * frequency;
+
+  float fx = floor(x); float fy = floor(y); float fz = floor(pz);
+  float cx = ceil(x);  float cy = ceil(y);  float cz = ceil(pz);
+
+  vec3 g000 = gradientHash(vec3(fx, fy, fz));
+  vec3 g100 = gradientHash(vec3(cx, fy, fz));
+  vec3 g010 = gradientHash(vec3(fx, cy, fz));
+  vec3 g110 = gradientHash(vec3(cx, cy, fz));
+  vec3 g001 = gradientHash(vec3(fx, fy, cz));
+  vec3 g101 = gradientHash(vec3(cx, fy, cz));
+  vec3 g011 = gradientHash(vec3(fx, cy, cz));
+  vec3 g111 = gradientHash(vec3(cx, cy, cz));
+
+  float d000 = dot(g000, vec3(x - fx, y - fy, pz - fz));
+  float d100 = dot(g100, vec3(x - cx, y - fy, pz - fz));
+  float d010 = dot(g010, vec3(x - fx, y - cy, pz - fz));
+  float d110 = dot(g110, vec3(x - cx, y - cy, pz - fz));
+  float d001 = dot(g001, vec3(x - fx, y - fy, pz - cz));
+  float d101 = dot(g101, vec3(x - cx, y - fy, pz - cz));
+  float d011 = dot(g011, vec3(x - fx, y - cy, pz - cz));
+  float d111 = dot(g111, vec3(x - cx, y - cy, pz - cz));
+
+  float sx = quinticSmooth(x - fx);
+  float sy = quinticSmooth(y - fy);
+  float sz = quinticSmooth(pz - fz);
+
+  float lx00 = mix(d000, d100, sx);
+  float lx10 = mix(d010, d110, sx);
+  float lx01 = mix(d001, d101, sx);
+  float lx11 = mix(d011, d111, sx);
+
+  float ly0 = mix(lx00, lx10, sy);
+  float ly1 = mix(lx01, lx11, sy);
+
+  return amplitude * mix(ly0, ly1, sz);
+}
+
+float auroraGlow(float t, vec2 shift) {
+  vec2 uv = gl_FragCoord.xy / uResolution.y;
+  uv += shift;
+
+  float noiseVal = 0.0;
+  float freq = uNoiseFreq;
+  float amp = uNoiseAmp;
+  vec2 samplePos = uv * uScale;
+
+  for (float i = 0.0; i < 3.0; i += 1.0) {
+    noiseVal += perlin3D(amp, freq, samplePos.x, samplePos.y, t);
+    amp *= uOctaveDecay;
+    freq *= 2.0;
+  }
+
+  float yBand = uv.y * 10.0 - uBandHeight * 10.0;
+  return 0.3 * max(exp(uBandSpread * (1.0 - 1.1 * abs(noiseVal + yBand))), 0.0);
+}
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / uResolution.xy;
+  float t = uSpeed * 0.4 * uTime;
+
+  vec2 shift = vec2(0.0);
+  if (uEnableMouse) {
+    shift = (uMouse - 0.5) * uMouseInfluence;
+  }
+
+  vec3 col = vec3(0.0);
+  col += 0.99 * auroraGlow(t, shift) * cosineGradient(uv.x + uTime * uSpeed * 0.2 * uColorSpeed, vec3(0.5), vec3(0.5), vec3(1.0), vec3(0.3, 0.20, 0.20)) * uColor1;
+  col += 0.99 * auroraGlow(t + uLayerOffset, shift) * cosineGradient(uv.x + uTime * uSpeed * 0.1 * uColorSpeed, vec3(0.5), vec3(0.5), vec3(2.0, 1.0, 0.0), vec3(0.5, 0.20, 0.25)) * uColor2;
+
+  col *= uBrightness;
+  float alpha = clamp(length(col), 0.0, 1.0);
+  gl_FragColor = vec4(col, alpha);
+}
+`;
+
+export default function SoftAurora({
+  speed = 0.6,
+  scale = 1.5,
+  brightness = 1.0,
+  color1 = '#f7f7f7',
+  color2 = '#e100ff',
+  noiseFrequency = 2.5,
+  noiseAmplitude = 1.0,
+  bandHeight = 0.5,
+  bandSpread = 1.0,
+  octaveDecay = 0.1,
+  layerOffset = 0,
+  colorSpeed = 1.0,
+  enableMouseInteraction = true,
+  mouseInfluence = 0.25
+}) {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+    const renderer = new Renderer({ alpha: true, premultipliedAlpha: false });
+    const gl = renderer.gl;
+    gl.clearColor(0, 0, 0, 0);
+
+    let program;
+    let currentMouse = [0.5, 0.5];
+    let targetMouse = [0.5, 0.5];
+
+    function handleMouseMove(e) {
+      const rect = gl.canvas.getBoundingClientRect();
+      targetMouse = [
+        (e.clientX - rect.left) / rect.width,
+        1.0 - (e.clientY - rect.top) / rect.height
+      ];
+    }
+
+    function handleMouseLeave() {
+      targetMouse = [0.5, 0.5];
+    }
+
+    function resize() {
+      renderer.setSize(container.offsetWidth, container.offsetHeight);
+      if (program) {
+        program.uniforms.uResolution.value = [gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height];
+      }
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const geometry = new Triangle(gl);
+    program = new Program(gl, {
+      vertex: vertexShader,
+      fragment: fragmentShader,
+      uniforms: {
+        uTime: { value: 0 },
+        uResolution: { value: [gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height] },
+        uSpeed: { value: speed },
+        uScale: { value: scale },
+        uBrightness: { value: brightness },
+        uColor1: { value: hexToVec3(color1) },
+        uColor2: { value: hexToVec3(color2) },
+        uNoiseFreq: { value: noiseFrequency },
+        uNoiseAmp: { value: noiseAmplitude },
+        uBandHeight: { value: bandHeight },
+        uBandSpread: { value: bandSpread },
+        uOctaveDecay: { value: octaveDecay },
+        uLayerOffset: { value: layerOffset },
+        uColorSpeed: { value: colorSpeed },
+        uMouse: { value: new Float32Array([0.5, 0.5]) },
+        uMouseInfluence: { value: mouseInfluence },
+        uEnableMouse: { value: enableMouseInteraction }
+      }
+    });
+
+    const mesh = new Mesh(gl, { geometry, program });
+    container.appendChild(gl.canvas);
+
+    if (enableMouseInteraction) {
+      gl.canvas.addEventListener('mousemove', handleMouseMove);
+      gl.canvas.addEventListener('mouseleave', handleMouseLeave);
+    }
+
+    let animationFrameId;
+
+    function update(time) {
+      animationFrameId = requestAnimationFrame(update);
+      program.uniforms.uTime.value = time * 0.001;
+
+      if (enableMouseInteraction) {
+        currentMouse[0] += 0.05 * (targetMouse[0] - currentMouse[0]);
+        currentMouse[1] += 0.05 * (targetMouse[1] - currentMouse[1]);
+        program.uniforms.uMouse.value[0] = currentMouse[0];
+        program.uniforms.uMouse.value[1] = currentMouse[1];
+      } else {
+        program.uniforms.uMouse.value[0] = 0.5;
+        program.uniforms.uMouse.value[1] = 0.5;
+      }
+
+      renderer.render({ scene: mesh });
+    }
+    animationFrameId = requestAnimationFrame(update);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', resize);
+      if (enableMouseInteraction) {
+        gl.canvas.removeEventListener('mousemove', handleMouseMove);
+        gl.canvas.removeEventListener('mouseleave', handleMouseLeave);
+      }
+      container.removeChild(gl.canvas);
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+    };
+  }, [speed, scale, brightness, color1, color2, noiseFrequency, noiseAmplitude, bandHeight, bandSpread, octaveDecay, layerOffset, colorSpeed, enableMouseInteraction, mouseInfluence]);
+
+  return <div ref={containerRef} className="soft-aurora-container" />;
+}
+.soft-aurora-container {
+  width: 100%;
+  height: 100%;
+}

@@ -4,5 +4,10 @@
   "description": "Онлайн-меню «Тихая гавань» — статический сайт",
   "scripts": {
     "start": "npx --yes serve . -l 3000"
+  },
+  "dependencies": {
+    "gsap": "^3.12.5",
+    "ogl": "^1.0.11"
   }
 }
+
