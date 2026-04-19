@@ -215,4 +215,12 @@
       syncThemeToggle();
     });
   }
+
+  var landingVideo = document.querySelector('.landing-video');
+  if (landingVideo && landingVideo.play) {
+    var p = landingVideo.play();
+    if (p && typeof p.catch === 'function') {
+      p.catch(function () {});
+    }
+  }
 })();

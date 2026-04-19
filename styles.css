@@ -55,8 +55,8 @@ body::before{
 
 .theme-toggle{
   position:fixed;
-  top:14px;
-  right:14px;
+  top:max(14px, env(safe-area-inset-top, 0px));
+  right:max(14px, env(safe-area-inset-right, 0px));
   z-index:40;
   width:48px;
   height:48px;
@@ -104,7 +104,47 @@ body::before{
   pointer-events:none;
 }
 
-/* Видео-заставка: затемнение + «бумажная» панель под текст */
+/* Первый блок: видео на весь блок, текст поверх на «бумажной» панели */
+.landing-content{
+  position:relative;
+  z-index:2;
+  padding:26px 20px 24px;
+  margin:0 auto 20px;
+  max-width:920px;
+  width:100%;
+  background:rgba(246,237,220,.98);
+  backdrop-filter:saturate(1.08) blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-radius:28px;
+  border:1px solid rgba(255,255,255,.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.65),
+    0 14px 44px rgba(0,0,0,.12);
+}
+.hero-card.landing-card.landing-card--video .landing-content .hero-lead,
+.hero-card.landing-card.landing-card--video .landing-content .hero-text{
+  text-shadow:0 1px 0 rgba(255,255,255,.9);
+}
+.hero-card.landing-card.landing-card--video .landing-content h1{
+  text-shadow:0 2px 0 rgba(255,255,255,.85);
+}
+.hero-card.landing-card.landing-card--video{
+  padding:0;
+  min-height:clamp(400px, 58vh, 720px);
+  overflow:hidden;
+  background:#0c2228;
+}
+.hero-card.landing-card.landing-card--video .landing-content{
+  margin:34px clamp(16px, 4vw, 36px) 28px;
+  max-width:920px;
+  width:calc(100% - clamp(32px, 8vw, 64px));
+  margin-left:auto;
+  margin-right:auto;
+}
+.hero-card.landing-card.landing-card--video::before{
+  z-index:3;
+  pointer-events:none;
+}
 .landing-media{
   position:absolute;
   inset:0;
@@ -116,56 +156,25 @@ body::before{
   width:100%;
   height:100%;
   min-height:100%;
+  display:block;
   object-fit:cover;
-  object-position:center 58%;
+  /* верх кадра (уши) в зоне видимости, низ кадра обрезается */
+  object-position:center top;
 }
 .landing-overlay{
   position:absolute;
   inset:0;
   z-index:1;
-  border-radius:inherit;
   pointer-events:none;
-  /* затемняем фон, чтобы за текстом не «шумело» видео */
+  border-radius:inherit;
+  /* плотнее под текстом сверху, ниже светлее — кот читается на видео */
   background:
     linear-gradient(
       180deg,
-      rgba(6,12,14,.55) 0%,
-      rgba(8,18,22,.42) 40%,
-      rgba(6,14,18,.65) 100%
+      rgba(6,12,14,.66) 0%,
+      rgba(8,18,22,.34) 40%,
+      rgba(6,14,18,.62) 100%
     );
-}
-.landing-content{
-  position:relative;
-  z-index:2;
-  padding:28px 20px 26px;
-  margin:28px clamp(16px, 4vw, 36px) 28px;
-  max-width:920px;
-  margin-left:auto;
-  margin-right:auto;
-  /* плотная «бумага» + лёгкий blur — текст читается на любом кадре */
-  background:rgba(246,237,220,.97);
-  backdrop-filter:saturate(1.08) blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  border-radius:28px;
-  border:1px solid rgba(255,255,255,.55);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.65),
-    0 14px 44px rgba(0,0,0,.22);
-}
-.hero-card.landing-card:has(.landing-media) .landing-content .hero-lead,
-.hero-card.landing-card:has(.landing-media) .landing-content .hero-text{
-  text-shadow:0 1px 0 rgba(255,255,255,.9);
-}
-.hero-card.landing-card:has(.landing-media) .landing-content h1{
-  text-shadow:0 2px 0 rgba(255,255,255,.85);
-}
-.hero-card.landing-card:has(.landing-media){
-  padding:0;
-  min-height:clamp(340px, 50vh, 600px);
-  background:#0c2228;
-}
-.hero-card.landing-card:has(.landing-media)::before{
-  z-index:3;
 }
 
 .eyebrow{
@@ -648,8 +657,8 @@ body.search-mode .menu-section.section-empty{
 
 .top-btn{
   position:fixed;
-  right:18px;
-  bottom:18px;
+  right:max(18px, env(safe-area-inset-right, 0px));
+  bottom:max(18px, env(safe-area-inset-bottom, 0px));
   width:52px;
   height:52px;
   border:none;
@@ -671,16 +680,32 @@ body.search-mode .menu-section.section-empty{
 
 @media (max-width:780px){
   .toolbar-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .hero-card.landing-card.landing-card--video .landing-content{
+    margin:28px 14px 22px;
+    padding:22px 16px 20px;
+  }
 }
 
 @media (max-width:640px){
   .container{width:min(100% - 16px, var(--max))}
   .toolbar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cards{grid-template-columns:1fr}
-  .hero-card:not(:has(.landing-media)),
-  .landing-card:not(:has(.landing-media)){padding:34px 16px 24px}
+  .hero-card:not(.landing-card--video),
+  .landing-card:not(.landing-card--video){padding:34px 16px 24px}
   .section-header,.section-body{padding-left:16px;padding-right:16px}
   .item-top{grid-template-columns:1fr}
   .landing-actions{flex-direction:column}
-  .landing-content{margin-left:12px;margin-right:12px;padding:22px 14px 18px}
+  .landing-card:not(.landing-card--video) .landing-content{margin-left:12px;margin-right:12px;padding:22px 14px 18px}
+  .hero-card.landing-card.landing-card--video{
+    padding:0;
+    min-height:clamp(340px, 52vh, 620px);
+    border-radius:28px;
+  }
+  .hero-card.landing-card.landing-card--video .landing-content{
+    margin:22px 12px 24px;
+    padding:20px 14px 18px;
+    width:calc(100% - 24px);
+  }
+  .landing{padding:16px 0 8px}
+  h1{font-size:clamp(32px, 9vw, 56px)}
 }
