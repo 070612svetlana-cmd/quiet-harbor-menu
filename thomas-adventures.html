@@ -965,13 +965,13 @@
       } else if (e.type === 'train_obstacle') {
         const ty = getTrackY(e.track, e.x);
         ctx.save();
-        ctx.translate(sx, ty - 26);
+        ctx.translate(sx, ty - 36);
         ctx.scale(-1, 1);
         ctx.fillStyle = '#b45309';
-        ctx.fillRect(-35, -36, 70, 40);
+        ctx.fillRect(-35, 0, 70, 40);
         ctx.fillStyle = '#451a03';
-        ctx.fillRect(-30, -30, 20, 12);
-        drawAnimatedWheels(wheelPhase, 28, 22, 9);
+        ctx.fillRect(-30, 6, 20, 12);
+        drawAnimatedWheels(wheelPhase, 31, 22, 9);
         ctx.restore();
       } else if (e.type === 'rival_chase' || e.type === 'rival_slow') {
         const foot = getTrackY(e.track, e.x);
