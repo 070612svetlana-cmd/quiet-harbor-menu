@@ -17,6 +17,12 @@
       } catch (e) {}
     })();
   </script>
+  <noscript>
+    <style>
+      .menu-section { display: block !important; }
+      .toolbar-wrap { position: static !important; }
+    </style>
+  </noscript>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/soft-aurora.css" />
   <link rel="stylesheet" href="css/target-cursor.css" />
@@ -29,8 +35,9 @@
     <div class="container">
       <div class="hero-card landing-card">
         <div class="landing-media" aria-hidden="true">
-          <video class="landing-video" autoplay muted loop playsinline>
-            <source src="IMG_0774.MP4" type="video/mp4">
+          <video class="landing-video" autoplay muted loop playsinline preload="metadata" poster="images/-5249253680387659078_121.jpg">
+            <source src="images/кот.mp4" type="video/mp4">
+            <source src="images/0405.mp4" type="video/mp4">
           </video>
         </div>
         <div class="landing-overlay"></div>
