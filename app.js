@@ -8,7 +8,6 @@
   const favBadge = document.getElementById('favBadge');
   const scrollFeaturesBtn = document.getElementById('scrollFeatures');
   const featuresEl = document.getElementById('features');
-  const themeToggle = document.getElementById('themeToggle');
 
   let activeSectionId = 'breakfasts';
 
@@ -186,41 +185,33 @@
     });
   }
 
-  function syncThemeToggle() {
-    if (!themeToggle) return;
-    var root = document.documentElement;
-    var dark = root.getAttribute('data-theme') === 'dark';
-    themeToggle.setAttribute('aria-pressed', dark ? 'true' : 'false');
-    themeToggle.setAttribute('aria-label', dark ? 'Включить светлую тему' : 'Включить тёмную тему');
-    themeToggle.textContent = dark ? '☀' : '🌙';
-    themeToggle.title = dark ? 'Светлая тема' : 'Тёмная тема';
+  const themeToggle = document.getElementById('themeToggle');
+
+  function isDarkTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'dark';
+  }
+
+  function setDarkTheme(dark) {
+    const root = document.documentElement;
+    if (dark) {
+      root.setAttribute('data-theme', 'dark');
+    } else {
+      root.removeAttribute('data-theme');
+    }
+    try {
+      localStorage.setItem(STORAGE_THEME, dark ? 'dark' : 'light');
+    } catch (e) {}
+    if (themeToggle) {
+      themeToggle.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      themeToggle.setAttribute('aria-label', dark ? 'Включить светлую тему' : 'Включить тёмную тему');
+      themeToggle.textContent = dark ? '☀️' : '🌙';
+    }
   }
 
   if (themeToggle) {
-    syncThemeToggle();
     themeToggle.addEventListener('click', function () {
-      var root = document.documentElement;
-      var dark = root.getAttribute('data-theme') === 'dark';
-      if (dark) {
-        root.removeAttribute('data-theme');
-        try {
-          localStorage.removeItem(STORAGE_THEME);
-        } catch (e) {}
-      } else {
-        root.setAttribute('data-theme', 'dark');
-        try {
-          localStorage.setItem(STORAGE_THEME, 'dark');
-        } catch (e) {}
-      }
-      syncThemeToggle();
+      setDarkTheme(!isDarkTheme());
     });
   }
-
-  var landingVideo = document.querySelector('.landing-video');
-  if (landingVideo && landingVideo.play) {
-    var p = landingVideo.play();
-    if (p && typeof p.catch === 'function') {
-      p.catch(function () {});
-    }
-  }
+  setDarkTheme(isDarkTheme());
 })();
