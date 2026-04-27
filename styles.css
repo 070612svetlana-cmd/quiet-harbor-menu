@@ -69,7 +69,7 @@ body::before{
   inset:0;
   display:grid;
   grid-template-columns:1fr;
-  padding:10px;
+  padding:0;
   z-index:0;
 }
 
@@ -78,7 +78,7 @@ body::before{
   height:100%;
   object-fit:cover;
   object-position:center 82%;
-  border-radius:26px;
+  border-radius:36px;
   filter:brightness(1.34) saturate(1.12) contrast(1.08);
 }
 
@@ -653,6 +653,8 @@ body.search-mode .menu-section.section-empty{
   .cards{grid-template-columns:1fr}
   .hero-card,
   .landing-card{padding:34px 16px 24px}
+  .landing-card{min-height:460px}
+  .landing-video{object-position:center center}
   .section-header,.section-body{padding-left:16px;padding-right:16px}
   .item-top{grid-template-columns:1fr}
   .landing-actions{flex-direction:column}
@@ -1080,7 +1082,7 @@ html[data-theme="dark"] .landing-video{
 @media (max-width:900px){
   .landing-card{min-height:520px}
   .landing-media{
-    padding:8px;
+    padding:0;
   }
   .landing-video{
     object-position:center 78%;
